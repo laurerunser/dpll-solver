@@ -1,0 +1,127 @@
+                      Mini-projet 1 : solveur DPLL récursif
+                             fichier RENDU
+                       (à remplir obligatoirement)
+
+**Un mini-projet sans fichier RENDU rempli ne recevra pas de note.**
+
+Date limite: 29 octobre 2021, 23h59
+
+Identité
+--------
+Nombre de binôme: **28**
+Nom, prénom 1: **RUNSER Laure**
+Nom, prénom 2: **aucun**
+
+
+Questions sur votre code
+------------------------
+0. Avez-vous testé que `make dpll` s'exécute sans erreurs ou warnings,
+   et que ensuite `./dpll sudoku-4x4.cnf` donne la réponse attendue (voir
+   fichier README) ?
+
+Oui
+
+---
+
+1. Avez-vous utilisé la fonction `filter_map` (donné dans dpll.ml)
+   dans votre implémentation de `simplifie` ? 
+   - Si oui, expliquez en quelques phrases en français comment vous
+     l'avez utilisée.
+   - Si non, expliquez en quelques phrases en français comment
+     fonctionne votre implémentation de `simplifie`.
+
+La fonction filter_map permet d'appliquer la fonction delete_literal_from_clause
+à chacune des clauses de la formule.
+
+La fonction delete_literal_from_clause permet de simplifier la clause sur
+laquelle elle est appellée :
+- si le literal i est présent tel quel, alors la clause est effacée (on renvoie None)
+- si la négation du literal i est présente, alors on enlève ce literal de la
+  clause et on renvoie le reste
+- sinon, on renvoie la clause telle quelle
+
+---
+
+2. Pour l'implémentation de `unitaire`, quelles sont les fonctions
+   auxiliaires que vous avez utilisées et/ou écrites ? (Par une
+   fonction auxiliaire, on entend ici soit une fonction d'une
+   bibliothèque, par exemple des fonctions comme `List.length`,
+   `List.rev_append`, ou une fonction `aux_unitaire` que vous avez
+   écrite vous-mêmes.) Expliquez en quelques phrases en français
+   comment ces fonctions auxiliaires sont utilisées dans votre
+   implémentation de la fonction `unitaire`.
+
+J'ai utilise la fonction List.length pour récupérer la longueur de chaque clause.
+
+La fonction unitaire regarde pour chaque clause sa longueur :
+- si la longueur est de 1, alors la clause ne contient qu'un seul littéral,
+  donc c'est une clause unitaire et on la renvoie (en utilisant List.hd)
+- sinon, on passe a la clause suivante.
+Si on arrive à la fin de la formule, alors on n'a pas trouvé de clause
+unitaire, donc on renvoie None
+
+---
+
+3. Pour l'implémentation de `pur`, quelles sont les fonctions
+   auxiliaires que vous avez utilisées et/ou écrites ?  Expliquez en
+   quelques phrases en français comment ces fonctions auxiliaires sont
+   utilisées dans votre implémentation de la fonction `pur`.
+
+J'ai tout d'abord écrit la fonction `get_literals` qui renvoie la liste
+des littéraux de la formule. Elle utilise List.sort_uniq qui permet de trier
+la liste avec MergeSort et de supprimer les doublons.
+Enlever les doublons rend la fonction `pur` beaucoup plus rapide, et on
+gagne en performance malgré le coût du tri.
+On considère un littéral et sa négation comme étant deux éléments différents,
+mais on trie les littéraux en fonction de leur valeur absolue.
+
+Dans la fonction `pur` :
+- on utilise la fonction get_literals pour avoir la liste des littéraux de la
+  formule
+- on fait un `match` sur la liste des littéraux :
+  - si la liste est vide, on est arrivé à la fin sans trouver de littéral
+    pur donc on renvoie None
+  - si la négation du literal n'est pas présente dans la liste, ce littéral est
+    pur et donc on le renvoie
+  - sinon, on continue sur le reste de la liste
+
+---
+
+4. Donnez un exemple d'une formule pour laquelle les deux fonctions
+   `solveur_split` et `solveur_dpll_rec` ont un comportement
+   différent, et expliquez les différences entre ces deux fonctions.
+
+SPLIT est un algorithme plus naïf que DPLL : il fait toujours un enbranchement
+récursif; alors que DPLL regarde d'abord s'il existe des simplifications plus
+simples à faire avant.
+
+Par exemple, sur la formule [[1;2]; [-1;3;2]; [2]] :
+- SPLIT fait un embranchement sur 1 et obtient :
+  - si 1 = true -> [[2; 3]; [2]]
+  - si 1 = false -> [[2]; [2]]
+  Il faut pour chacune de ces branches faire encore plusieurs opérations
+  pour trouver la solution
+
+- DPLL trouve la clause unitaire [2], la simplifie (2 = true)  et obtient []
+  (toutes les clauses sont supprimés). DPLL a donc trouvé en une seule
+  étape que la formule est valide, alors qu'il en faut plusieurs pour
+  SPLIT.
+
+Donc DPLL est un algorithme plus efficace que SPLIT.
+
+---
+
+5. Avez-vous d'autres remarques sur votre rendu ? (question optionnelle)
+
+Je n'ai pas respecté les indications de spécidication  sur les erreurs : `unitaire`
+et `pur` devaient lever des exceptions quand elles ne trouvent pas les littéraux demandés.
+
+Mais la gestion des erreurs par les blocs `try ... catch` est très coûteuse. Pour des
+questions de performance, j'ai décidé de renvoyer `None` si les recherches échouent.
+En testant sur le sudoku expert, le temps de calcul a été divisé par 2 (de 1,5s à 0,7s)
+avec cette seule modification.
+
+
+---
+
+--fin du fichier RENDU--
